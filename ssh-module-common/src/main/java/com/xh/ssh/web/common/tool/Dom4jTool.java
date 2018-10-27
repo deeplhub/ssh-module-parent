@@ -188,13 +188,13 @@ public class Dom4jTool {
 	public static <T> String parseFromListToXml(List<T> list) {
 		Document document = DocumentHelper.createDocument();
 		Element root = document.addElement("rows");
-		Map<String, Object> map = null;
+		Map<Object, Object> map = null;
 		for (T object : list) {
 			// bean与Map
-			map = (object instanceof Map) ? (Map<String, Object>) object : BeanTool.parseFromBeanToMap(object);
+			map = (object instanceof Map) ? (Map<Object, Object>) object : BeanTool.parseFromBeanToMap(object, false);
 			Element classElement = root.addElement(object.getClass().getSimpleName());
-			for (Map.Entry<String, Object> entry : map.entrySet()) {
-				Element keyElement = classElement.addElement(entry.getKey());
+			for (Map.Entry<Object, Object> entry : map.entrySet()) {
+				Element keyElement = classElement.addElement(entry.getKey().toString());
 				keyElement.setText(String.valueOf(entry.getValue()));
 			}
 		}

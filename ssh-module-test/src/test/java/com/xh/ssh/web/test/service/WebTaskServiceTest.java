@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.alibaba.fastjson.JSON;
 import com.xh.ssh.web.mapper.model.WebTask;
 import com.xh.ssh.web.service.task.service.IWebTaskService;
 
@@ -29,12 +30,46 @@ public class WebTaskServiceTest {
 
 	// @Test
 	public void query() {
-		List<WebTask> list = taskService.selectAll();
+		// List<WebTask> list = taskService.selectAll();
+		List<WebTask> list = taskService.loadAll(WebTask.class);
 		System.out.println(list.size());
 	}
 
-	@Test
+	// @Test
 	public void delete() {
 		taskService.delete(1);
+	}
+
+	// @Test
+	public void getAll() {
+		WebTask task = new WebTask();
+		task.setTaskId(1);
+
+		// task = (WebTask) taskService.load(WebTask.class, 1);
+		// task = (WebTask) taskService.get("com.xh.ssh.web.mapper.model.WebTask", 1);
+
+		// Map<Object, Object> paramMap = new HashMap<Object, Object>();
+		// paramMap.put("taskId", 1);
+		// task = taskService.loadTableByCloumn(WebTask.class, paramMap);
+		task = (WebTask) taskService.loadTableByCloumn(task);
+
+		System.out.println(JSON.toJSONString(task));
+	}
+
+	// @Test
+	public void get() {
+		String taskId = "1";
+		WebTask task = (WebTask) taskService.load(WebTask.class, Integer.valueOf(taskId));
+
+		System.out.println(JSON.toJSONString(task));
+	}
+
+	@Test
+	public void getArr() {
+
+//		List<Object[]>  arrs = taskService.selectArray();
+//		
+//		System.out.println(JSON.toJSONString(arrs));
+		
 	}
 }

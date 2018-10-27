@@ -23,7 +23,8 @@ import org.springframework.util.Assert;
  * @email xhaimail@163.com
  * @date 2018年8月20日
  */
-public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSupport implements HibernateDao<T, Serializable> {
+@SuppressWarnings("all")
+public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSupport implements IHibernateDao<T, Serializable> {
 
 	@Resource(name = "sessionFactory")
 	private void setMySessionFactory(SessionFactory sessionFactory) {
@@ -51,16 +52,22 @@ public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSu
 	}
 
 	@Override
-	public <T> Object deleObject(T entity) {
+	public <T> Object deleteObject(T entity) {
 		Assert.notNull(entity, "实体类不能为空");
 		getHibernateTemplate().delete(entity);
 		return entity;
 	}
 
 	@Override
-	public <T> void delObject(T entity) {
-		Assert.notNull(entity, "实体类不能为空");
-		getHibernateTemplate().delete(entity);
+	public <T> List<T> loadAll(Class<T> paramClass) {
+
+		return getHibernateTemplate().loadAll(paramClass);
+	}
+
+	@Override
+	public <T> Object getObject(String entityName, Serializable paramSerializableId) {
+
+		return getHibernateTemplate().get(entityName, paramSerializableId);
 	}
 
 	@Override
@@ -70,21 +77,27 @@ public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSu
 	}
 
 	@Override
-	public <T> List<T> loadTableByList(Class<T> classze, Serializable hql) {
+	public <T> List<T> loadTableByList(Serializable hql) {
 
 		return getSession().createQuery(hql.toString()).list();
 	}
 
 	@Override
 	public <T> T loadTableByCloumn(Class<T> paramClass, Map<Object, Object> paramMap) {
-		StringBuffer hql = new StringBuffer("FROM " + paramClass.getName() + " e where 1=1 ");
+		StringBuffer hql = new StringBuffer("FROM " + paramClass.getName() + " t where 1=1 ");
 		return (T) getSession().createQuery(buildHQL(paramMap, hql).toString()).uniqueResult();
+	}
+
+	@Override
+	public <T> List<T> selectTableByCloumn(Class<T> paramClass, Map<Object, Object> paramMap) {
+		StringBuffer hql = new StringBuffer("FROM " + paramClass.getName() + " t where 1=1 ");
+		return (List<T>) getSession().createQuery(buildHQL(paramMap, hql).toString()).list();
 	}
 
 	@Override
 	public <T> List<T> selectByHql(String paramString) {
 
-		return selectByHql(paramString, null);
+		return this.selectByHql(paramString, null);
 	}
 
 	@Override
@@ -99,7 +112,7 @@ public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSu
 	@Override
 	public <T> List<T> selectBySql(String paramString, Class<T> paramClass) {
 
-		return selectBySql(paramString, null, paramClass);
+		return this.selectBySql(paramString, null, paramClass);
 	}
 
 	@Override
@@ -110,7 +123,11 @@ public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSu
 			query = getSession().createNativeQuery(paramString);
 			query.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
 		} else {
-			query = getSession().createNativeQuery(paramString, paramClass);
+			if (paramClass != null) {
+				query = getSession().createNativeQuery(paramString, paramClass);
+			} else {
+				query = getSession().createNativeQuery(paramString);
+			}
 		}
 
 		if (null != paramArrayOfObject) {
@@ -152,6 +169,31 @@ public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSu
 		query.executeUpdate();
 	}
 
+	@Override
+	public <T> List<Object[]> selectBySQLArray(String paramString) {
+
+		return this.selectBySQLArray(paramString, null);
+	}
+
+	@Override
+	public <T> List<Object[]> selectBySQLArray(String paramString, Object[] paramArrayOfObject) {
+		NativeQuery query = getSession().createNativeQuery(paramString);
+		if (null != paramArrayOfObject) {
+			for (int i = 0; i < paramArrayOfObject.length; i++) {
+				query.setParameter(i + 1, paramArrayOfObject[i]);
+			}
+		}
+		return query.list();
+	}
+
+	/********************************************************************************
+	 * 
+	 * 
+	 * 私有方法
+	 * 
+	 * 
+	 ********************************************************************************/
+
 	private <T> void modifyBySql(String paramString, Object[] paramArrayOfObject) {
 		NativeQuery<T> query = getSession().createNativeQuery(paramString);
 		if (null != paramArrayOfObject) {
@@ -168,9 +210,13 @@ public class HibernateDaoImpl<T, PK extends Serializable> extends HibernateDaoSu
 		Iterator it = es.iterator();
 		while (it.hasNext()) {
 			Map.Entry entry = (Map.Entry) it.next();
-			String k = (String) entry.getKey();
-			String v = (String) entry.getValue();
-			hql.append(" and e." + k + " = '" + v + "' ");
+			Object key = entry.getKey();
+			Object val = entry.getValue();
+			if (val instanceof String) {
+				hql.append(" AND t." + key + " = '" + val + "' ");
+			} else {
+				hql.append(" AND t." + key + " = " + val + " ");
+			}
 		}
 		return hql;
 	}

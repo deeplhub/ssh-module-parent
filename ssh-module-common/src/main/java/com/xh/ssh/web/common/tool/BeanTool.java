@@ -87,13 +87,14 @@ public class BeanTool {
 	 * @author H.Yang
 	 * 
 	 * @param clazz
+	 * @param flag 判断是否显示空值，true 显示， false 不显示
 	 * @return
 	 */
-	public static Map<String, Object> parseFromBeanToMap(Object obj) {
+	public static Map<Object, Object> parseFromBeanToMap(Object obj, boolean flag) {
 		if (obj == null) {
 			return null;
 		}
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<Object, Object> map = new HashMap<Object, Object>();
 		try {
 			BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());
 			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
@@ -103,7 +104,14 @@ public class BeanTool {
 				}
 				// 得到property对应的getter方法
 				Method getMethod = property.getReadMethod();
-				map.put(property.getName(), getMethod.invoke(obj));
+				if (!flag) {
+					if (getMethod.invoke(obj) == null || getMethod.invoke(obj) == "") {
+						continue;
+					}
+					map.put(property.getName(), getMethod.invoke(obj));
+				} else {
+					map.put(property.getName(), getMethod.invoke(obj));
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

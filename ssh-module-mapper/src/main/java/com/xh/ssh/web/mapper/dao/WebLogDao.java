@@ -68,7 +68,7 @@ public class WebLogDao extends HibernateDaoImpl<WebLog, Long> {
 			}
 		}
 
-		return (List<WebLog>) super.loadTableByList(webLog.getClass(), sb);
+		return super.loadTableByList(sb);
 	}
 
 	public List<WebLog> selectHqlListAll(WebLog webLog) {

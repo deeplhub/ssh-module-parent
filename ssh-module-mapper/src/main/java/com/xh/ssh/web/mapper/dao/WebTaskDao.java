@@ -1,11 +1,14 @@
 package com.xh.ssh.web.mapper.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
+import com.alibaba.fastjson.JSON;
 import com.xh.ssh.web.mapper.dao.base.HibernateDaoImpl;
+import com.xh.ssh.web.mapper.dao.cache.ICacheDao;
 import com.xh.ssh.web.mapper.model.WebTask;
 
 /**
@@ -18,23 +21,19 @@ import com.xh.ssh.web.mapper.model.WebTask;
  */
 @Repository
 @SuppressWarnings("all")
-public class WebTaskDao extends HibernateDaoImpl<WebTask, Long> {
+public class WebTaskDao extends HibernateDaoImpl<WebTask, Long> implements ICacheDao {
 
-	public void save(WebTask task) {
-		super.saveObject(task);
+	@Override
+	public Map<Object, Object> loadTableToCache() {
+		Map<Object, Object> paramMap = new HashMap<Object, Object>();
+		paramMap.put("status", 1);
+
+		List<WebTask> list = (List<WebTask>) super.selectTableByCloumn(WebTask.class, paramMap);
+		paramMap.clear();
+		for (WebTask webTask : list) {
+			paramMap.put(webTask.getClass().getSimpleName() + ":" + webTask.getTaskId(), JSON.toJSONString(webTask));
+		}
+		return paramMap;
 	}
 
-	public void delete(Integer paramId) {
-		String hql = "DELETE FROM WebTask WHERE taskId = ?0 ";
-		Query query = getSession().createQuery(hql);
-		query.setParameter(0, paramId);
-		query.executeUpdate();
-	}
-
-	public List<WebTask> selectAll() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("FROM WebTask ");
-
-		return (List<WebTask>) super.loadTableByList(WebTask.class, sb);
-	}
 }

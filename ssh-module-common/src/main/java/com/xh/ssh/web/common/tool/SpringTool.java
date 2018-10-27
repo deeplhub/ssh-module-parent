@@ -10,6 +10,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import com.xh.ssh.web.common.exception.ResultException;
+
 /**
  * <b>Title: Spring工具类</b>
  * <p>Description: </p>
@@ -47,6 +49,15 @@ public class SpringTool implements ApplicationContextAware {
 	public static <T> T getSpringBean(HttpServletRequest request, String beanName) {
 		ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(request.getSession().getServletContext());
 		T bean = (T) ctx.getBean(beanName);
+		return bean;
+	}
+
+	public static <T> T getSpringBeanThrows(String beanName) {
+
+		if (getSpringBean(StringUtils.uncapitalize(beanName)) == null) {
+			throw new ResultException("can not get bean:" + beanName);
+		}
+		T bean = (T) getSpringBean(StringUtils.uncapitalize(beanName));
 		return bean;
 	}
 

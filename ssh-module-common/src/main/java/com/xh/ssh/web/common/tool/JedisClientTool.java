@@ -506,7 +506,33 @@ public class JedisClientTool {
 	 * @param pattern
 	 * @return
 	 */
-	public static Set<byte[]> keys(String pattern) {
+	public static Set<String> getKeys(String pattern) {
+		Jedis jedis = null;
+		try {
+			jedis = jedisPool.getResource();
+			jedis.select(index);
+			Set<String> allKey = jedis.keys(("*" + pattern + "*"));
+			return allKey;
+		} catch (Exception e) {
+			handleJedisException(e);
+			LogTool.error(JedisClientTool.class, "Cache获取失败：" + e.getMessage());
+			LogTool.error(JedisClientTool.class, e);
+			return null;
+		} finally {
+			releaseResource(jedis);
+		}
+	}
+
+	/**
+	 * <b>Title: 拿到缓存中所有符合pattern的key</b>
+	 * <p>Description: </p>
+	 * 
+	 * @author H.Yang
+	 * 
+	 * @param pattern
+	 * @return
+	 */
+	public static Set<byte[]> getKeys2(String pattern) {
 		Jedis jedis = null;
 		try {
 			jedis = jedisPool.getResource();

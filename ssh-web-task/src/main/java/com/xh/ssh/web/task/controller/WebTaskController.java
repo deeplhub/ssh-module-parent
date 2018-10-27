@@ -53,7 +53,7 @@ public class WebTaskController extends BaseController {
 	@RequestMapping("query")
 	@ResponseBody
 	public String query() {
-		List<WebTask> list = taskService.selectAll();
+		List<WebTask> list = taskService.loadAll(WebTask.class);
 
 		return JSON.toJSONString(list);
 	}
@@ -82,7 +82,7 @@ public class WebTaskController extends BaseController {
 
 			WebTask task = TaskPoolTool.get(taskId);
 			if (task == null) {
-				task = taskService.get(Integer.valueOf(taskId));
+				task = (WebTask) taskService.load(WebTask.class, Integer.valueOf(taskId));
 			}
 
 			Assert.isNull(task, "未知的任务ID");
@@ -123,7 +123,7 @@ public class WebTaskController extends BaseController {
 				isRepeatQuest = true;
 				throw new ResultException("请求正在处理中，请勿重复提交");
 			}
-			WebTask task = taskService.get(Integer.valueOf(taskId));
+			WebTask task = (WebTask) taskService.load(WebTask.class, Integer.valueOf(taskId));
 
 			Assert.isNull(task, "未知的任务ID");
 			int flag = schedulerManageService.deployTask(task);

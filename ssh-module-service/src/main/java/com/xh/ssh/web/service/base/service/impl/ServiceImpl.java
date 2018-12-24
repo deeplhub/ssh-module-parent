@@ -51,9 +51,9 @@ public class ServiceImpl<M extends IHibernateDao<T, Serializable>, T> implements
 	}
 
 	@Override
-	public <T> Object get(String entityName, Serializable paramSerializableId) {
+	public <T> Object get(Class<T> paramClass, Serializable paramSerializableId) {
 
-		return defaultDao.getObject(entityName, paramSerializableId);
+		return defaultDao.getObject(paramClass, paramSerializableId);
 	}
 
 	@Override
@@ -89,6 +89,12 @@ public class ServiceImpl<M extends IHibernateDao<T, Serializable>, T> implements
 		}
 		Assert.isBlank(null, "The result is a list....");
 		return null;
+	}
+
+	@Override
+	public Object update(Object obj, Map<String, String> excludeFieldMap, boolean flag) {
+
+		return defaultDao.updateObjectByHql(obj, excludeFieldMap, flag);
 	}
 
 	// @Override

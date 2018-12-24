@@ -17,7 +17,6 @@
 	<!-- aspectj aop启用CGliB代理 -->
 	<aop:aspectj-autoproxy expose-proxy="true" proxy-target-class="true" />
 
-	<!-- com.xh.activiti.commons.activiti此包下的类是用于创建模型和编辑模型时用 -->
 	<!-- 使用Annotation自动注册Bean,扫描@Controller和@ControllerAdvice -->
 	<context:component-scan base-package="com.xh.ssh.web.task;
 		com.xh.ssh.web.common.exception;

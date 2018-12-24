@@ -19,21 +19,23 @@ public interface IService<T> {
 
 	public <T> Object update(T entity);
 
+	public Object update(Object obj, Map<String, String> excludeFieldMap, boolean flag);
+
 	public <T> Object delete(T entity);
 
 	public <T> List<T> loadAll(Class<T> paramClass);
 
-	public <T> Object get(String entityName, Serializable paramSerializableId);
+	public <T> Object get(Class<T> paramClass, Serializable paramSerializableId);
 
 	public <T> Object load(Class<T> paramClass, Serializable paramSerializableId);
-	
+
 	public <T> T loadTableByCloumn(Class<T> paramClass, Map<Object, Object> paramMap);
-	
+
 	public <T> List<T> selectTableByCloumn(Class<T> paramClass, Map<Object, Object> paramMap);
-	
+
 	public <T> List<T> loadTableByCloumn(T entity);
-	
+
 	public <T> Object loadTableByCloumnz(T entity);
-	
-//	public <T> void loadTableToCache(String beanName, Map<Object, Object> paramMap);
+
+	// public <T> void loadTableToCache(String beanName, Map<Object, Object> paramMap);
 }

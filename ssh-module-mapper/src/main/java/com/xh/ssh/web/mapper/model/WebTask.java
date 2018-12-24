@@ -56,7 +56,7 @@ public class WebTask {
 	// 0无效，1有效，2执行次数到达计划执行次数，3部署
 	@Column(name = "status")
 	private Integer status;
-	@Column(name = "create_time")
+	@Column(name = "create_time", updatable = false)
 	private Date createTime;
 
 	public void setTaskId(Integer taskId) {
@@ -157,12 +157,12 @@ public class WebTask {
 		return noticeList;
 	}
 
-	/** 0无效，1有效，2执行次数到达计划执行次数，3部署 */
+	/** 0无效, 1未部署, 2已部署, 3已暂停, 4设上限(执行次数到达计划执行次数) */
 	public void setStatus(Integer status) {
 		this.status = status;
 	}
 
-	/** 0无效，1有效，2执行次数到达计划执行次数，3部署 */
+	/** 0无效, 1未部署, 2已部署, 3已暂停, 4设上限(执行次数到达计划执行次数) */
 	public Integer getStatus() {
 		return status;
 	}

@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.alibaba.fastjson.JSON;
 import com.xh.ssh.web.common.tool.Dom4jTool;
 import com.xh.ssh.web.common.tool.LogTool;
 import com.xh.ssh.web.mapper.model.WebLog;
@@ -47,7 +48,7 @@ public class WebLogServiceTest {
 		// webLogService.save(log);
 	}
 
-	@Test
+//	@Test
 	public void selectList() throws Exception {
 		// 方法日志
 		LogTool.info(this.getClass(), " selectList() ");
@@ -76,6 +77,19 @@ public class WebLogServiceTest {
 		// 结果日志
 		WebLog log2 = new WebLog(this.getClass().getSimpleName(), null, 2, "Test", null, null, null, null, xml);
 		webLogService.save(log2);
+
+	}
+	
+	
+	@Test
+	public void selectListAll() throws Exception {
+		// 方法日志
+		LogTool.info(this.getClass(), " selectListAll() ");
+
+		// 查询数据库
+		 List<WebLog> list = webLogService.selectHqlListAll(null);
+
+		 LogTool.info(this.getClass(), JSON.toJSONString(list));
 
 	}
 

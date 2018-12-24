@@ -69,7 +69,7 @@ public class WebLog {
 	public WebLog() {
 		super();
 	}
-	
+
 	public WebLog(String msgCode, String holderName, Integer operateStatus, String operateType, Integer userId, String fromIp,
 			String msgFileIp, String msgPath, String msgInfo) {
 		super();
@@ -84,12 +84,12 @@ public class WebLog {
 		this.msgInfo = msgInfo;
 	}
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
 	public Integer getId() {
 		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	/** 消息编码 */

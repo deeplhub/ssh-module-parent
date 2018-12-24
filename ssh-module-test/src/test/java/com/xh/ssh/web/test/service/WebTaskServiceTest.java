@@ -1,6 +1,8 @@
 package com.xh.ssh.web.test.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -37,7 +39,7 @@ public class WebTaskServiceTest {
 
 	// @Test
 	public void delete() {
-		taskService.delete(1);
+		taskService.deleteById("14,13,12");
 	}
 
 	// @Test
@@ -56,20 +58,29 @@ public class WebTaskServiceTest {
 		System.out.println(JSON.toJSONString(task));
 	}
 
-	// @Test
+	@Test
 	public void get() {
-		String taskId = "1";
+		String taskId = "11";
 		WebTask task = (WebTask) taskService.load(WebTask.class, Integer.valueOf(taskId));
-
 		System.out.println(JSON.toJSONString(task));
+
+		// taskService.update(task);
+		Map<String, String> excludeFieldMap = new HashMap<String, String>();
+		excludeFieldMap.put("createTime", "createTime");
+		excludeFieldMap.put("status", "status");
+		excludeFieldMap.put("noticeList", "noticeList");
+
+//		taskService.update(task, null, true);
+		
+//		taskService.update(obj, excludeFieldMap, flag)
 	}
 
-	@Test
+	// @Test
 	public void getArr() {
 
-//		List<Object[]>  arrs = taskService.selectArray();
-//		
-//		System.out.println(JSON.toJSONString(arrs));
-		
+		// List<Object[]> arrs = taskService.selectArray();
+		//
+		// System.out.println(JSON.toJSONString(arrs));
+
 	}
 }

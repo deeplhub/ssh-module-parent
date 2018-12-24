@@ -3,7 +3,7 @@ package com.xh.ssh.web.task.service.impl;
 import org.springframework.stereotype.Service;
 
 import com.xh.ssh.web.mapper.model.WebTask;
-import com.xh.ssh.web.task.service.IDoTaskService;
+import com.xh.ssh.web.service.task.scheduler.IDoTaskService;
 
 /**
  * <b>Title: 创建一个测试任务</b>

@@ -19,6 +19,8 @@
 	
 	<!-- 获取spring注解类 -->
 	<bean id="springTool" class="com.xh.ssh.web.common.tool.SpringTool" />
+	
+	<bean id="schedulerFactoryBean" name="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"/>
 
 	<import resource="classpath:spring/spring-hibernate.xml" />
 </beans>

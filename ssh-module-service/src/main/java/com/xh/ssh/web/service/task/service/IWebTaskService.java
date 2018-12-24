@@ -13,5 +13,6 @@ import com.xh.ssh.web.service.base.service.IService;
  */
 public interface IWebTaskService extends IService<WebTask> {
 
+	public Object deleteById(String paramId);
 
 }

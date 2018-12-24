@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.fastjson.JSON;
 import com.xh.ssh.web.mapper.model.WebLog;
 import com.xh.ssh.web.service.log.service.IWebLogService;
 
@@ -24,22 +24,16 @@ public class WebLogController {
 	@Autowired
 	private IWebLogService webLogService;
 
-	@RequestMapping("info")
-	public String index() {
+	@RequestMapping("/easyui")
+	public String indexEasyui() {
 		System.out.println("AAAAAAAAAAAAAAAAAAAAAA");
-		return "info";
+		return "easyui.index";
 	}
 
-	public void save(String paramXML) {
-
-		WebLog webLog = null;
-		webLogService.save(webLog);
-	}
-
-	@RequestMapping("query")
-	public String queryList(WebLog webLog) {
+	@RequestMapping("/query")
+	@ResponseBody
+	public Object queryList(WebLog webLog) {
 		List<WebLog> list = webLogService.selectHqlList(webLog);
-		String json = JSON.toJSONString(list);
-		return json;
+		return list;
 	}
 }

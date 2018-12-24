@@ -10,20 +10,18 @@ package com.xh.ssh.web.common.exception;
  */
 public enum ExceptionCode {
 
-	/** 成功 (0000, "OK") */
-	SUCCESS(0000, "OK"),
-	/** 系统异常 (1010, "服务器繁忙，请稍后重试！") **/
-	SERVER_ERROR(1010, "服务器繁忙，请稍后重试！"),
-	/** 数据库异常 (2010, "数据库操作异常！数据异常！查询异常！查无记录！") **/
-	DB_ERROR(2010, "数据库操作异常！数据异常！查询异常！查无记录！"),
-	/** 参数异常 (3010, "无效参数！缺少参数！参数格式不匹配！参数非法！") **/
-	PARAMETER_ERROR(3010, "无效参数！缺少参数！参数格式不匹配！参数非法！"),
-	/** 服务异常 (4010, "非法请求！无操作权限！上传下载失败！") **/
-	SERVICE_ERROR(4010, "非法请求！无操作权限！上传下载失败！"),
-	/** 未登录 (4020, "未登录") */
-	MEMBER_INVALID(4020, "未登录"),
-	/** 账号被禁用 (4022, "账号被禁用") */
-	MEMBER_DISABLED(4022, "账号被禁用");
+	/** 成功 (200, "操作成功") */
+	SUCCESS(200, "操作成功"),
+	/** 请求报文语法错误或参数错误 (400, "无效参数！缺少参数！参数格式不匹配！参数非法！") **/
+	PARAMETER_ERROR(400, "无效参数！缺少参数！参数格式不匹配！参数非法！"),
+	/** 请求资源被拒绝 (4010, "非法请求！无操作权限！上传下载失败！") **/
+	FORBIDDEN_ERROR(403, "非法请求！无操作权限！上传下载失败！"),
+	/** 无法找到请求资源 (404, "无法找到请求资源！") **/
+	NOT_FOUND(404, "无法找到请求资源！"),
+	/** 服务器故障或Web应用故障 (500, "服务器异常！") **/
+	INTERNAL_SERVER_ERROR(500, "服务器异常！"),
+	/** 数据库异常 (3306, "数据库操作异常！数据异常！查询异常！") **/
+	DB_ERROR(3306, "数据库操作异常！数据异常！查询异常！");
 
 	public final Integer code;
 	public final String msg;
@@ -37,8 +35,9 @@ public enum ExceptionCode {
 		try {
 			return ExceptionCode.valueOf(code);
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		return SERVER_ERROR;
+		return INTERNAL_SERVER_ERROR;
 	}
 }

@@ -36,4 +36,15 @@ public class WebTaskDao extends HibernateDaoImpl<WebTask, Long> implements ICach
 		return paramMap;
 	}
 
+	public List<WebTask> selectByHql(String paramId) {
+		String sql = "FROM WebTask WHERE taskId IN(?) ";
+		Object[] paramArrayOfObject = paramId.split(",");
+		return super.selectByHql(sql, paramArrayOfObject);
+	}
+
+	public void deleteById(String paramId) {
+		String sql = "DELETE WebTask WHERE taskId IN (?) AND status = 1 OR status=0 ";
+		Object[] paramArrayOfObject = paramId.split(",");
+		super.delObjectByHql(sql, paramArrayOfObject);
+	}
 }

@@ -1,5 +1,7 @@
 package com.xh.ssh.web.service.task.service.impl;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
@@ -23,12 +25,17 @@ public class WebTaskServiceImpl extends ServiceImpl<WebTaskDao, WebTask> impleme
 	@Resource
 	private WebTaskDao webTaskDao;
 
-	// @Override
-	// public <T> void loadTableToCache(String beanName) {
-	//
-	// Map<Object, Object> paramMap = new HashMap<Object, Object>();
-	// paramMap.put("status", 1);
-	// List<WebTask> list = super.defaultDao.loadTableToCache(WebTask.class);
-	// }
+	@Override
+	public Object deleteById(String paramId) {
+
+		webTaskDao.deleteById(paramId);
+
+		String name = "";
+		List<WebTask> list = webTaskDao.selectByHql(paramId);
+		for (WebTask webTask : list) {
+			name += webTask.getTaskName() + ", ";
+		}
+		return name;
+	}
 
 }

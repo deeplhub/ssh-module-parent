@@ -36,6 +36,7 @@
 		<servlet.version>3.1.0</servlet.version>
 		<jackson.version>2.9.0</jackson.version>
 		<httpclient.version>4.5.6</httpclient.version>
+		<httpmime.version>4.5.6</httpmime.version>
 	</properties>
 
 	<dependencies>
@@ -260,6 +261,12 @@
 			<artifactId>httpclient</artifactId>
 			<version>${httpclient.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>${httpmime.version}</version>
+		</dependency>
+
 
 	</dependencies>
 

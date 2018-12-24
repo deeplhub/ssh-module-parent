@@ -1,5 +1,6 @@
 package com.xh.ssh.web.test.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +38,16 @@ public class WebTaskServiceTest {
 		System.out.println(list.size());
 	}
 
-	// @Test
+	@Test
 	public void delete() {
-		taskService.deleteById("14,13,12");
+		String taskId = "1,8,9,";
+		String[] paramArrayOfObject = taskId.split(",");
+		List<Integer> paramIds = new ArrayList<Integer>();
+		for (String tid : paramArrayOfObject) {
+			paramIds.add(Integer.valueOf(tid));
+		}
+
+		taskService.deleteById(paramIds);
 	}
 
 	// @Test
@@ -58,7 +66,7 @@ public class WebTaskServiceTest {
 		System.out.println(JSON.toJSONString(task));
 	}
 
-	@Test
+	// @Test
 	public void get() {
 		String taskId = "11";
 		WebTask task = (WebTask) taskService.load(WebTask.class, Integer.valueOf(taskId));
@@ -70,9 +78,9 @@ public class WebTaskServiceTest {
 		excludeFieldMap.put("status", "status");
 		excludeFieldMap.put("noticeList", "noticeList");
 
-//		taskService.update(task, null, true);
-		
-//		taskService.update(obj, excludeFieldMap, flag)
+		// taskService.update(task, null, true);
+
+		// taskService.update(obj, excludeFieldMap, flag)
 	}
 
 	// @Test

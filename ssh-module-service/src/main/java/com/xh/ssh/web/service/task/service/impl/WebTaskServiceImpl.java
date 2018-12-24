@@ -26,16 +26,22 @@ public class WebTaskServiceImpl extends ServiceImpl<WebTaskDao, WebTask> impleme
 	private WebTaskDao webTaskDao;
 
 	@Override
-	public Object deleteById(String paramId) {
+	public Object deleteById(List<Integer> paramIds) {
 
-		webTaskDao.deleteById(paramId);
+		webTaskDao.deleteById(paramIds);
 
 		String name = "";
-		List<WebTask> list = webTaskDao.selectByHql(paramId);
+		List<WebTask> list = webTaskDao.selectByHql(paramIds);
 		for (WebTask webTask : list) {
-			name += webTask.getTaskName() + ", ";
+			name += webTask.getTaskName() + "，";
 		}
 		return name;
+	}
+
+	@Override
+	public Object execute(String[] taskId) {
+
+		return null;
 	}
 
 }

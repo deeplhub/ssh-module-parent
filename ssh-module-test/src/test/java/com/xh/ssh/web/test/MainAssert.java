@@ -1,5 +1,7 @@
 package com.xh.ssh.web.test;
 
+import com.xh.ssh.web.mapper.model.WebTask;
+
 /**
  * <b>Title: </b>
  * <p>Description: </p>
@@ -11,11 +13,15 @@ package com.xh.ssh.web.test;
 public class MainAssert {
 
 	public static void main(String[] args) {
-		String str = "";
-		String[] arr = null;//str.split(",");
-		for (String string : arr) {
-			System.out.println("AAAAAA");
-		}
+		WebTask task = new WebTask();
+		System.out.println(task);
+		
+		task.setTaskName("AAA");
+		System.out.println(task);
+		
+		WebTask task2 = new WebTask();
+		task.setCron("BBBBB");
+		System.out.println(task2);
 	}
 
 }

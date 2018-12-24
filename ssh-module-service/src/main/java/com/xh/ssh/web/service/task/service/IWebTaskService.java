@@ -1,5 +1,7 @@
 package com.xh.ssh.web.service.task.service;
 
+import java.util.List;
+
 import com.xh.ssh.web.mapper.model.WebTask;
 import com.xh.ssh.web.service.base.service.IService;
 
@@ -13,6 +15,7 @@ import com.xh.ssh.web.service.base.service.IService;
  */
 public interface IWebTaskService extends IService<WebTask> {
 
-	public Object deleteById(String paramId);
+	public Object deleteById(List<Integer> paramIds);
 
+	public Object execute(String[] taskId);
 }

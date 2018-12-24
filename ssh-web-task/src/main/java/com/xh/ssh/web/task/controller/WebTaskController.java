@@ -1,5 +1,6 @@
 package com.xh.ssh.web.task.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -56,11 +57,23 @@ public class WebTaskController extends BaseController {
 	public Object save(WebTask task) {
 		LogTool.info(this.getClass(), task);
 		Assert.notNull(task, "对象不能为空！");
-
-		task.setStatus(1);// 未部署
-		task.setCreateTime(new Date());
-		Object obj = taskService.save(task);
-		return super.renderSuccess();
+		boolean isRepeatQuest = false;
+		String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
+		String key = this.getClass().getSimpleName() + "_" + task;
+		try {
+			if (JedisClientTool.isExist(key, time)) {
+				isRepeatQuest = true;
+				throw new ResultException("请求正在处理中，请勿重复提交");
+			}
+			task.setStatus(1);// 未部署
+			task.setCreateTime(new Date());
+			taskService.save(task);
+			return super.renderSuccess();
+		} finally {
+			if (!isRepeatQuest) {
+				JedisClientTool.del(key);
+			}
+		}
 	}
 
 	@PostMapping("edit")
@@ -69,13 +82,26 @@ public class WebTaskController extends BaseController {
 		LogTool.info(this.getClass(), task);
 		Assert.notNull(task, "对象不能为空！");
 		Assert.isTrue((task.getStatus() != null && task.getStatus() == 1), "任务已部署！");
+		boolean isRepeatQuest = false;
+		String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
+		String key = this.getClass().getSimpleName() + "_" + task;
+		try {
+			if (JedisClientTool.isExist(key, time)) {
+				isRepeatQuest = true;
+				throw new ResultException("请求正在处理中，请勿重复提交");
+			}
 
-		Map<String, String> excludeFieldMap = new HashMap<String, String>();
-		excludeFieldMap.put("createTime", "createTime");
-		excludeFieldMap.put("status", "status");
+			Map<String, String> excludeFieldMap = new HashMap<String, String>();
+			excludeFieldMap.put("createTime", "createTime");
+			excludeFieldMap.put("status", "status");
 
-		Object obj = taskService.update(task, excludeFieldMap, false);
-		return super.renderSuccess();
+			Object obj = taskService.update(task, excludeFieldMap, false);
+			return super.renderSuccess();
+		} finally {
+			if (!isRepeatQuest) {
+				JedisClientTool.del(key);
+			}
+		}
 	}
 
 	@RequestMapping("remove")
@@ -84,7 +110,7 @@ public class WebTaskController extends BaseController {
 		LogTool.info(this.getClass(), taskId);
 		Assert.notNull(taskId, "任务ID不能为空！");
 
-		Object obj = taskService.deleteById(taskId);
+		Object obj = taskService.deleteById(this.paramSplit(taskId));
 
 		Assert.isTrue((obj != null && !"".equals("")), obj + "任务已部署！");
 		return super.renderSuccess();
@@ -102,40 +128,26 @@ public class WebTaskController extends BaseController {
 	@ResponseBody
 	public Object execute(String taskId) {
 		Assert.isBlank(taskId, "任务ID不能为空！");
-		
-		String[] arrays = taskId.split(",");
-		for (String tid : arrays) {
-			boolean isRepeatQuest = false;
-			String key = this.getClass().getSimpleName() + "_" + tid;
-			try {
-				String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
-				if (JedisClientTool.isExist(key, time)) {
-					isRepeatQuest = true;
-					throw new ResultException("请求正在处理中，请勿重复提交");
-				}
-				JedisClientTool.expire(key, 300);
-				
-				WebTask task = TaskPoolTool.get(tid);
-				if (task == null) {
-					task = (WebTask) taskService.load(WebTask.class, Integer.valueOf(tid));
-				}
-				
-				Assert.notNull(task, tid + "未知的任务ID");
-				
-				boolean flag = schedulerManageService.quartzExecTask(task);
-				LogTool.debug(this.getClass(), "执行结果" + flag);
-				if (flag) {
-					return super.renderSuccess();
-				}
-			} finally {
-				if (!isRepeatQuest) {
-					JedisClientTool.del(key);
-				}
+
+		String name = "";
+		List<Integer> list = this.paramSplit(taskId);
+		for (Integer tid : list) {
+			WebTask task = TaskPoolTool.get(tid + "");
+			if (task == null) {
+				task = (WebTask) taskService.load(WebTask.class, tid);
+			}
+
+			boolean flag = schedulerManageService.quartzExecTask(task);
+			LogTool.debug(this.getClass(), task.getTaskId() + " - " + task.getTaskName() + "执行结果" + flag);
+			if (!flag) {
+				name += task.getTaskName() + "、";
 			}
 		}
-		
-
-		return super.renderError("任务：" + taskId + " - 执行失败");
+		if ("".equals(name)) {
+			return super.renderSuccess();
+		} else {
+			return super.renderError("任务：" + name + "执行失败");
+		}
 
 	}
 
@@ -151,28 +163,22 @@ public class WebTaskController extends BaseController {
 	@ResponseBody
 	public Object deploy(String taskId) {
 		Assert.isBlank(taskId, "任务ID不能为空！");
-		boolean isRepeatQuest = false;
-		String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
-		String key = this.getClass().getSimpleName() + "_" + taskId;
-
-		try {
-			if (JedisClientTool.isExist(key, time)) {
-				isRepeatQuest = true;
-				throw new ResultException("请求正在处理中，请勿重复提交");
-			}
-			WebTask task = (WebTask) taskService.load(WebTask.class, Integer.valueOf(taskId));
-
-			Assert.notNull(task, "未知的任务ID");
+		String name = "";
+		List<Integer> list = this.paramSplit(taskId);
+		for (Integer tid : list) {
+			WebTask task = (WebTask) taskService.load(WebTask.class, tid);
 			Result result = schedulerManageService.quartzDeployTask(task);
 			LogTool.debug(this.getClass(), result);
-			return result;
-		} finally {
-			if (!isRepeatQuest) {
-				JedisClientTool.del(key);
+
+			if (result.getCode() != 200) {
+				name += task.getTaskName() + "，";
 			}
 		}
-
-//		return super.renderError("任务：" + taskId + " 部署失败");
+		if ("".equals(name)) {
+			return super.renderSuccess();
+		} else {
+			return super.renderError("任务：" + name + "部署失败");
+		}
 	}
 
 	// 取消部署
@@ -180,25 +186,11 @@ public class WebTaskController extends BaseController {
 	@ResponseBody
 	public Object undeploy(String taskId) {
 		Assert.isBlank(taskId, "任务ID不能为空！");
-		boolean isRepeatQuest = false;
-		String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
-		String key = this.getClass().getSimpleName() + "_" + taskId;
 
-		try {
-			if (JedisClientTool.isExist(key, time)) {
-				isRepeatQuest = true;
-				throw new ResultException("请求正在处理中，请勿重复提交");
-			}
-
-			boolean flag = schedulerManageService.quartzUndeployTask(taskId);
-			LogTool.debug(this.getClass(), flag);
-			if (flag) {
-				return super.renderSuccess();
-			}
-		} finally {
-			if (!isRepeatQuest) {
-				JedisClientTool.del(key);
-			}
+		boolean flag = schedulerManageService.quartzUndeployTask(taskId);
+		LogTool.debug(this.getClass(), flag);
+		if (flag) {
+			return super.renderSuccess();
 		}
 
 		return super.renderError("任务：" + taskId + " 部署失败");
@@ -209,25 +201,11 @@ public class WebTaskController extends BaseController {
 	@ResponseBody
 	public Object pause(String taskId) {
 		Assert.isBlank(taskId, "任务ID不能为空！");
-		boolean isRepeatQuest = false;
-		String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
-		String key = this.getClass().getSimpleName() + "_" + taskId;
 
-		try {
-			if (JedisClientTool.isExist(key, time)) {
-				isRepeatQuest = true;
-				throw new ResultException("请求正在处理中，请勿重复提交");
-			}
-
-			boolean flag = schedulerManageService.quartzPauseTask(taskId);
-			LogTool.debug(this.getClass(), flag);
-			if (flag) {
-				return super.renderSuccess();
-			}
-		} finally {
-			if (!isRepeatQuest) {
-				JedisClientTool.del(key);
-			}
+		boolean flag = schedulerManageService.quartzPauseTask(taskId);
+		LogTool.debug(this.getClass(), flag);
+		if (flag) {
+			return super.renderSuccess();
 		}
 
 		return super.renderError("任务：" + taskId + " 部署失败");
@@ -238,25 +216,11 @@ public class WebTaskController extends BaseController {
 	@ResponseBody
 	public Object restoreTask(String taskId) {
 		Assert.isBlank(taskId, "任务ID不能为空！");
-		boolean isRepeatQuest = false;
-		String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
-		String key = this.getClass().getSimpleName() + "_" + taskId;
 
-		try {
-			if (JedisClientTool.isExist(key, time)) {
-				isRepeatQuest = true;
-				throw new ResultException("请求正在处理中，请勿重复提交");
-			}
-
-			boolean flag = schedulerManageService.quartzRestoreTask(taskId);
-			LogTool.debug(this.getClass(), flag);
-			if (flag) {
-				return super.renderSuccess();
-			}
-		} finally {
-			if (!isRepeatQuest) {
-				JedisClientTool.del(key);
-			}
+		boolean flag = schedulerManageService.quartzRestoreTask(taskId);
+		LogTool.debug(this.getClass(), flag);
+		if (flag) {
+			return super.renderSuccess();
 		}
 
 		return super.renderError("任务：" + taskId + " 部署失败");
@@ -267,27 +231,22 @@ public class WebTaskController extends BaseController {
 	@ResponseBody
 	public Object shutdown(String taskId) {
 		Assert.isBlank(taskId, "任务ID不能为空！");
-		boolean isRepeatQuest = false;
-		String time = DateFormatTool.parseDateToString(new Date(), DateFormatTool.DATA_FORMATTER3_3);
-		String key = this.getClass().getSimpleName() + "_" + taskId;
 
-		try {
-			if (JedisClientTool.isExist(key, time)) {
-				isRepeatQuest = true;
-				throw new ResultException("请求正在处理中，请勿重复提交");
-			}
-
-			boolean flag = schedulerManageService.quartzShutdownTask(taskId);
-			LogTool.debug(this.getClass(), flag);
-			if (flag) {
-				return super.renderSuccess();
-			}
-		} finally {
-			if (!isRepeatQuest) {
-				JedisClientTool.del(key);
-			}
+		boolean flag = schedulerManageService.quartzShutdownTask(taskId);
+		LogTool.debug(this.getClass(), flag);
+		if (flag) {
+			return super.renderSuccess();
 		}
 
 		return super.renderError("任务：" + taskId + " 部署失败");
+	}
+
+	private List<Integer> paramSplit(String paramId) {
+		String[] paramArrayOfObject = paramId.split(",");
+		List<Integer> paramIds = new ArrayList<Integer>();
+		for (String tid : paramArrayOfObject) {
+			paramIds.add(Integer.valueOf(tid));
+		}
+		return paramIds;
 	}
 }

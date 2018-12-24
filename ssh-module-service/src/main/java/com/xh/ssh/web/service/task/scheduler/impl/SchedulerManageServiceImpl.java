@@ -47,13 +47,15 @@ public class SchedulerManageServiceImpl implements ISchedulerManageService {
 			// 执行次数到达计划执行次数，不再部署
 			if (task.getPlanExec() > 0) {
 				if (task.getExecuted().intValue() >= task.getPlanExec().intValue() || task.getStatus() == ConstantTool.NUMBER_TWO) {
-					return Result.exception(ConstantTool.FORBIDDEN, "执行次数到达计划执行次数！");
+					LogTool.info(this.getClass(), task.getTaskId() + " - " + task.getTaskName() + "执行次数到达计划执行次数！");
+					return Result.exception(ConstantTool.FORBIDDEN, task.getTaskName() + "执行次数到达计划执行次数！");
 				}
 			}
 
 			Object target = SpringTool.getSpringBean(task.getTaskClass());
 			if (target == null) {
-				return Result.exception(ConstantTool.NOT_FOUND, "没有扫描到" + task.getTaskClass() + "类！");
+				LogTool.info(this.getClass(), task.getTaskId() + " - " + task.getTaskName() + "，没有扫描到" + task.getTaskClass() + "类！");
+				return Result.exception(ConstantTool.NOT_FOUND, task.getTaskName() + "没有扫描到" + task.getTaskClass() + "类！");
 			}
 
 			Class<?> clazz = Class.forName(target.getClass().getName());
@@ -63,6 +65,8 @@ public class SchedulerManageServiceImpl implements ISchedulerManageService {
 
 			// 拿到Quartz中的调度器
 			Scheduler scheduler = schedulerFactoryBean.getScheduler();
+
+			// scheduler.isStarted()
 
 			// 创建一个 JobDetail
 			JobDetail taskDetail = JobBuilder.newJob(TriggerQuartzJobProxy.class)// 任务名，任务组，任务执行类
@@ -97,8 +101,8 @@ public class SchedulerManageServiceImpl implements ISchedulerManageService {
 			task.setStatus(2);// 已部署
 			this.updateWebTask(task);
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | SchedulerException e) {
-			LogTool.error(this.getClass(), e);
-			return Result.exception(ConstantTool.INTERNAL_SERVER_ERROR, "部署失败");
+			LogTool.info(this.getClass(), task.getTaskId() + " - " + task.getTaskName() + "部署失败", e);
+			return Result.exception(ConstantTool.INTERNAL_SERVER_ERROR, task.getTaskId() + "，部署失败");
 		}
 
 		return Result.exception(ConstantTool.OK, "部署成功");

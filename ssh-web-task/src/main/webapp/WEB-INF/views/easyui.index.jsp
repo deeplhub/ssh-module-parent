@@ -54,8 +54,8 @@
 					$.post("remove.action", {
 						taskId : paramId.substring(paramId.length - 1, -1)
 					}, function(data) {
-						if (data.code == 0) {
-							$("#taskDataGrid").datagrid("reload"); // reload the user data
+						$("#taskDataGrid").datagrid("reload"); // reload the user data
+						if (data.code == 200) {
 							$.messager.show({
 								title : "系统提示",
 								msg : "删除成功！"
@@ -93,7 +93,7 @@
 			},
 			success : function(data) {
 				data = (data != null && data != "") ? JSON.parse(data) : null;
-				if (data != null && data.code == 0) {
+				if (data != null && data.code == 200) {
 					$("#dlg").dialog("close");
 					$("#taskDataGrid").datagrid("reload"); // reload the user data
 					$.messager.show({
@@ -130,13 +130,17 @@
 	}
 
 	function ajaxTask(url) {
-		var row = $("#taskDataGrid").datagrid("getSelected");
-		if (row) {
+		var rows = $("#taskDataGrid").datagrid("getSelections");
+		if (rows) {
+			var paramId = "";
+			for (var i = 0; i < rows.length; i++) {
+				paramId += rows[i].taskId + ",";
+			}
 			$.post(url, {
-				taskId : row.taskId
+				taskId : paramId
 			}, function(data) {
-				if (data.code == 0) {
-					$("#taskDataGrid").datagrid("reload"); // reload the user data
+				$("#taskDataGrid").datagrid("reload"); // reload the user data
+				if (data.code == 200) {
 					$.messager.show({
 						title : "系统提示",
 						msg : data.msg

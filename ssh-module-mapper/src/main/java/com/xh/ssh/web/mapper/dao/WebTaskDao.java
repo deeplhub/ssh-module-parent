@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
 import com.alibaba.fastjson.JSON;
@@ -36,15 +37,14 @@ public class WebTaskDao extends HibernateDaoImpl<WebTask, Long> implements ICach
 		return paramMap;
 	}
 
-	public List<WebTask> selectByHql(String paramId) {
-		String sql = "FROM WebTask WHERE taskId IN(?) ";
-		Object[] paramArrayOfObject = paramId.split(",");
-		return super.selectByHql(sql, paramArrayOfObject);
+	public List<WebTask> selectByHql(List<Integer> paramIds) {
+		String sql = "FROM WebTask WHERE taskId IN(:taskId) ";
+		return getSession().createQuery(sql).setParameter("taskId", paramIds).list();
 	}
 
-	public void deleteById(String paramId) {
-		String sql = "DELETE WebTask WHERE taskId IN (?) AND status = 1 OR status=0 ";
-		Object[] paramArrayOfObject = paramId.split(",");
-		super.delObjectByHql(sql, paramArrayOfObject);
+	public void deleteById(List<Integer> paramIds) {
+		String sql = "DELETE WebTask WHERE taskId IN (:taskId) AND status = 1 OR status=0 ";
+		Query query = getSession().createQuery(sql).setParameter("taskId", paramIds);
+		query.executeUpdate();
 	}
 }
